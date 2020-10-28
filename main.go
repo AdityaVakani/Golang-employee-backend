@@ -25,7 +25,7 @@ type EmpData struct {
 	Mobile       string `json:"mobile" validate:"required,min=9,max=15"`
 	City         string `json:"city" validate:"required"`
 	Gender       string `json:"gender" validate:"required"`
-	DepartmentID int    `json:"departmentId" validate:"required,validDep"`
+	DepartmentID string `json:"departmentId" validate:"required,validDep"`
 	HireDate     string `json:"hireDate" validate:"required"`
 	IsPermanent  bool   `json:"isPermanent"`
 }
@@ -37,12 +37,12 @@ func init() {
 	datasource := "root:password@tcp(localhost:3306)/go_backend01"
 	db, err = sql.Open("mysql", datasource)
 	if err != nil {
-		log.Fatalln("error connecting to db", err)
+		log.Println("error connecting to db", err)
 	}
 	fmt.Println("db is connected")
 	err = db.Ping()
 	if err != nil {
-		log.Fatalln("error pinging db", err)
+		log.Println("error pinging db", err)
 	}
 
 }
@@ -68,7 +68,8 @@ func getAllEmp(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	result, err := db.Query("SELECT * FROM employee_db")
 	if err != nil {
-		log.Fatalln("error selecting all from table", err)
+		log.Println("error selecting all from table", err)
+		return
 	}
 	defer result.Close()
 	var allEmp []EmpData
@@ -77,7 +78,8 @@ func getAllEmp(w http.ResponseWriter, r *http.Request) {
 		var emp EmpData
 		err := result.Scan(&emp.ID, &emp.FullName, &emp.Email, &emp.Mobile, &emp.City, &emp.Gender, &emp.DepartmentID, &emp.HireDate, &emp.IsPermanent)
 		if err != nil {
-			log.Fatalln("error reading select results", err)
+			log.Println("error reading select results", err)
+			return
 		}
 		allEmp = append(allEmp, emp)
 
@@ -92,7 +94,8 @@ func getEmp(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	result, err := db.Query("SELECT * FROM employee_db WHERE empID = ?", params["id"])
 	if err != nil {
-		log.Fatalln("error selecting from table", err)
+		log.Println("error selecting from table", err)
+		return
 	}
 	defer result.Close()
 	var emp EmpData
@@ -100,7 +103,8 @@ func getEmp(w http.ResponseWriter, r *http.Request) {
 	for result.Next() {
 		err := result.Scan(&emp.ID, &emp.FullName, &emp.Email, &emp.Mobile, &emp.City, &emp.Gender, &emp.DepartmentID, &emp.HireDate, &emp.IsPermanent)
 		if err != nil {
-			log.Fatalln("error reading select results", err)
+			log.Println("error reading select results", err)
+			return
 		}
 	}
 
@@ -114,12 +118,14 @@ func createEmp(w http.ResponseWriter, r *http.Request) {
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.Fatalln("error reading body", err)
+		log.Println("error reading body", err)
+		return
 	}
 	var emp EmpData
 	err = json.Unmarshal(body, &emp)
 	if err != nil {
-		log.Fatalln("error unmarshaling", err)
+		log.Println("error unmarshaling", err)
+		return
 	}
 	fmt.Println(reflect.TypeOf(emp.HireDate), emp)
 	errorMap := validation(emp)
@@ -128,12 +134,14 @@ func createEmp(w http.ResponseWriter, r *http.Request) {
 	} else {
 		stmt, err := db.Prepare("INSERT INTO employee_db (empName,empEmail,empPhone,empCity,empGender,empDepartmentID,empHireDate,empIsPermanent) VALUES(?,?,?,?,?,?,?,?)")
 		if err != nil {
-			log.Fatalln("error preparing sql statement", err)
+			log.Println("error preparing sql statement", err)
+			return
 		}
 		_, err = stmt.Exec(emp.FullName, emp.Email, emp.Mobile, emp.City, emp.Gender, emp.DepartmentID, emp.HireDate, emp.IsPermanent)
 
 		if err != nil {
-			log.Fatalln("error executing sql statement", err)
+			log.Println("error executing sql statement", err)
+			return
 		}
 		fmt.Fprintf(w, "New Employee Created")
 
@@ -145,12 +153,14 @@ func updateEmpField(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.Fatalln("error reading body in update", err)
+		log.Println("error reading body in update", err)
+		return
 	}
 	keyVal := make(map[string]string)
 	err = json.Unmarshal(body, &keyVal)
 	if err != nil {
-		log.Fatalln("error unmarshaling body in update", err)
+		log.Println("error unmarshaling body in update", err)
+		return
 	}
 	colName := keyVal["columnName"]
 	colValue := keyVal["columnValue"]
@@ -161,11 +171,13 @@ func updateEmpField(w http.ResponseWriter, r *http.Request) {
 	//fmt.Println(sqlStatement)
 	stmt, err := db.Prepare(sqlStatement)
 	if err != nil {
-		log.Fatalln("error preparing update sql", err)
+		log.Println("error preparing update sql", err)
+		return
 	}
 	_, err = stmt.Exec()
 	if err != nil {
-		log.Fatalln("error executing update statement", err)
+		log.Println("error executing update statement", err)
+		return
 	}
 	fmt.Fprintf(w, "Employee was updated")
 }
@@ -175,12 +187,14 @@ func updateEmpAll(w http.ResponseWriter, r *http.Request) {
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.Fatalln("error reading update all body", err)
+		log.Println("error reading update all body", err)
+		return
 	}
 	var emp EmpData
 	err = json.Unmarshal(body, &emp)
 	if err != nil {
-		log.Fatalln("error unmarshaling update all json", err)
+		log.Println("error unmarshaling update all json", err)
+		return
 	}
 	params := mux.Vars(r)
 	errorMap := validation(emp)
@@ -189,12 +203,14 @@ func updateEmpAll(w http.ResponseWriter, r *http.Request) {
 	} else {
 		stmt, err := db.Prepare("UPDATE employee_db SET empName=?, empEmail=?, empPhone=?, empCity=?, empGender=?, empDepartmentID=?, empHireDate=?, empIsPermanent=? where empID =?")
 		if err != nil {
-			log.Fatalln("error preparing update all statement", err)
+			log.Println("error preparing update all statement", err)
+			return
 		}
 		//fmt.Println(emp.FullName, emp.Email, emp.Mobile, emp.City, emp.Gender, emp.DepartmentID, emp.HireDate, emp.IsPermanent, params["id"])
 		_, err = stmt.Exec(emp.FullName, emp.Email, emp.Mobile, emp.City, emp.Gender, emp.DepartmentID, emp.HireDate, emp.IsPermanent, params["id"])
 		if err != nil {
-			log.Fatalln("error executing update all statement", err)
+			log.Println("error executing update all statement", err)
+			return
 		}
 		fmt.Fprintf(w, "Update all employee fields")
 	}
@@ -207,25 +223,29 @@ func deleteEmp(w http.ResponseWriter, r *http.Request) {
 
 	stmt, err := db.Prepare("DELETE FROM employee_db WHERE empID = ?")
 	if err != nil {
-		log.Fatalln("error preparing delete statements", err)
+		log.Println("error preparing delete statements", err)
+		return
 	}
 	_, err = stmt.Exec(params["id"])
 	if err != nil {
-		panic(err.Error())
+		log.Println("error executing delete statements", err)
+		return
 	}
 	fmt.Fprintf(w, "employee deleted")
 
 }
 func validDep(dep validator.FieldLevel) bool {
-	result, err := db.Query("SELECT exists(SELECT* FROM department_lu where depID=?)", dep.Field().Int())
+	result, err := db.Query("SELECT exists(SELECT* FROM department_lu where depID=?)", dep.Field().String())
 	if err != nil {
-		log.Fatalln("error querying department_lu", err)
+		log.Println("error querying department_lu", err)
+		return false
 	}
 	var res int
 	for result.Next() {
 		err = result.Scan(&res)
 		if err != nil {
-			log.Fatalln("error reading depid results")
+			log.Println("error reading depid results")
+			return false
 		}
 	}
 	return res == 1
@@ -237,12 +257,12 @@ func validation(emp EmpData) map[string]string {
 	uni := ut.New(translator, translator)
 	trans, found := uni.GetTranslator("en")
 	if !found {
-		log.Fatalln("translator not found")
+		log.Println("translator not found")
 	}
 	v := validator.New()
 
 	if err := en_translations.RegisterDefaultTranslations(v, trans); err != nil {
-		log.Fatalln(err)
+		log.Println(err)
 	}
 	_ = v.RegisterTranslation("validDep", trans, func(ut ut.Translator) error {
 		return ut.Add("validDep", "{0} must be a valid department", true) // see universal-translator for details
