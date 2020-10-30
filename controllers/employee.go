@@ -22,7 +22,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 
 func GetAllEmp(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	result, err := db.Query("SELECT * FROM employee_db")
+	result, err := db.Query("SELECT * FROM employee")
 	if err != nil {
 		log.Println("error selecting all from table", err)
 		return
@@ -48,7 +48,7 @@ func GetAllEmp(w http.ResponseWriter, r *http.Request) {
 func GetEmp(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
-	result, err := db.Query("SELECT * FROM employee_db WHERE empID = ?", params["id"])
+	result, err := db.Query("SELECT * FROM employee WHERE empID = ?", params["id"])
 	if err != nil {
 		log.Println("error selecting from table", err)
 		return
@@ -88,7 +88,7 @@ func CreateEmp(w http.ResponseWriter, r *http.Request) {
 	if len(errorMap) != 0 {
 		fmt.Fprint(w, errorMap)
 	} else {
-		stmt, err := db.Prepare("INSERT INTO employee_db (empName,empEmail,empPhone,empCity,empGender,empDepartmentID,empHireDate,empIsPermanent) VALUES(?,?,?,?,?,?,?,?)")
+		stmt, err := db.Prepare("INSERT INTO employee (empName,empEmail,empPhone,empCity,empGender,empDepartmentID,empHireDate,empIsPermanent) VALUES(?,?,?,?,?,?,?,?)")
 		if err != nil {
 			log.Println("error preparing sql statement", err)
 			return
@@ -123,7 +123,7 @@ func UpdateEmpField(w http.ResponseWriter, r *http.Request) {
 	if reflect.TypeOf(colValue) == reflect.TypeOf("Str") {
 		colValue = "'" + colValue + "'"
 	}
-	sqlStatement := "UPDATE employee_db SET " + string(colName) + " = " + string(colValue) + " where empID = " + string(params["id"])
+	sqlStatement := "UPDATE employee SET " + string(colName) + " = " + string(colValue) + " where empID = " + string(params["id"])
 	//fmt.Println(sqlStatement)
 	stmt, err := db.Prepare(sqlStatement)
 	if err != nil {
@@ -157,7 +157,7 @@ func UpdateEmpAll(w http.ResponseWriter, r *http.Request) {
 	if len(errorMap) != 0 {
 		fmt.Fprint(w, errorMap)
 	} else {
-		stmt, err := db.Prepare("UPDATE employee_db SET empName=?, empEmail=?, empPhone=?, empCity=?, empGender=?, empDepartmentID=?, empHireDate=?, empIsPermanent=? where empID =?")
+		stmt, err := db.Prepare("UPDATE employee SET empName=?, empEmail=?, empPhone=?, empCity=?, empGender=?, empDepartmentID=?, empHireDate=?, empIsPermanent=? where empID =?")
 		if err != nil {
 			log.Println("error preparing update all statement", err)
 			return
@@ -177,7 +177,7 @@ func DeleteEmp(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
 
-	stmt, err := db.Prepare("DELETE FROM employee_db WHERE empID = ?")
+	stmt, err := db.Prepare("DELETE FROM employee WHERE empID = ?")
 	if err != nil {
 		log.Println("error preparing delete statements", err)
 		return
