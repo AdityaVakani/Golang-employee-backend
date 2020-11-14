@@ -22,6 +22,19 @@ func main() {
 	router.HandleFunc("/menu", controllers.CreateMenu).Methods("POST")
 	router.HandleFunc("/menu/{id}", controllers.UpdateMenu).Methods("PUT")
 	router.HandleFunc("/menu/{id}", controllers.DeleteMenu).Methods("DELETE")
+
+	router.HandleFunc("/orders", controllers.GetAllOrders).Methods("GET")
+	router.HandleFunc("/orders/{orderId}", controllers.GetOrder).Methods("GET")
+	router.HandleFunc("/orders", controllers.CreateOrder).Methods("POST")
+	router.HandleFunc("/orders/{orderId}", controllers.UpdateOrder).Methods("PUT")
+	router.HandleFunc("/orders/{orderId}", controllers.DeleteOrders).Methods("DELETE")
+
+	router.HandleFunc("/orders/{orderId}/order_details", controllers.GetAllDetails).Methods("GET")
+	router.HandleFunc("/orders/{orderId}/order_details/{productId}", controllers.GetDetail).Methods("GET")
+	router.HandleFunc("/orders/{orderId}/order_details", controllers.AddDetails).Methods("POST")
+	router.HandleFunc("/orders/{orderId}/order_details/{productId}", controllers.UpdateDetails).Methods("PUT")
+	router.HandleFunc("/orders/{orderId}/order_details/{productId}", controllers.DeleteDetails).Methods("DELETE")
+
 	http.ListenAndServe(":8080", router)
 
 }
