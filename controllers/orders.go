@@ -74,12 +74,12 @@ func CreateOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	stmt, err := db.Prepare("INSERT INTO orders (orderID,customer,address,city,gender,orderDate,isDelivered) VALUES(?,?,?,?,?,?,?)")
+	stmt, err := db.Prepare("INSERT INTO orders (customer,address,city,gender,orderDate,isDelivered) VALUES(?,?,?,?,?,?)")
 	if err != nil {
 		log.Println("error preparing sql statement", err)
 		return
 	}
-	_, err = stmt.Exec(order.OrderID, order.Customer, order.Address, order.City, order.Gender, order.OrderDate, order.IsDelivered)
+	_, err = stmt.Exec(order.Customer, order.Address, order.City, order.Gender, order.OrderDate, order.IsDelivered)
 
 	if err != nil {
 		log.Println("error executing sql statement", err)
@@ -105,13 +105,13 @@ func UpdateOrder(w http.ResponseWriter, r *http.Request) {
 	}
 	params := mux.Vars(r)
 
-	stmt, err := db.Prepare("UPDATE orders SET orderID=?,customer=?,address=?,city=?,gender=?,orderDate=?,isDelivered=? where orderID =?")
+	stmt, err := db.Prepare("UPDATE orders SET customer=?,address=?,city=?,gender=?,orderDate=?,isDelivered=? where orderID =?")
 	if err != nil {
 		log.Println("error preparing update all statement", err)
 		return
 	}
 
-	_, err = stmt.Exec(order.OrderID, order.Customer, order.Address, order.City, order.Gender, order.OrderDate, order.IsDelivered, params["orderId"])
+	_, err = stmt.Exec(order.Customer, order.Address, order.City, order.Gender, order.OrderDate, order.IsDelivered, params["orderId"])
 	if err != nil {
 		log.Println("error executing update all statement", err)
 		return
@@ -203,12 +203,12 @@ func AddDetails(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	params := mux.Vars(r)
-	stmt, err := db.Prepare("INSERT INTO order_details (productID,orderID,product,quantity,price) VALUES(?,?,?,?,?)")
+	stmt, err := db.Prepare("INSERT INTO order_details (orderID,product,quantity,price) VALUES(?,?,?,?)")
 	if err != nil {
 		log.Println("error preparing sql statement", err)
 		return
 	}
-	_, err = stmt.Exec(detail.ProductID, params["orderId"], detail.Product, detail.Quantity, detail.Price)
+	_, err = stmt.Exec(params["orderId"], detail.Product, detail.Quantity, detail.Price)
 
 	if err != nil {
 		log.Println("error executing sql statement", err)
@@ -233,13 +233,13 @@ func UpdateDetails(w http.ResponseWriter, r *http.Request) {
 	}
 	params := mux.Vars(r)
 
-	stmt, err := db.Prepare("UPDATE order_details SET productID=?,product=?,quantity=?,price=? where orderID =? and productID=?")
+	stmt, err := db.Prepare("UPDATE order_details SET product=?,quantity=?,price=? where orderID =? and productID=?")
 	if err != nil {
 		log.Println("error preparing update statement", err)
 		return
 	}
 
-	_, err = stmt.Exec(detail.ProductID, detail.Product, detail.Quantity, detail.Price, params["orderId"], params["productId"])
+	_, err = stmt.Exec(detail.Product, detail.Quantity, detail.Price, params["orderId"], params["productId"])
 	if err != nil {
 		log.Println("error executing update all statement", err)
 		return

@@ -1,14 +1,14 @@
 package models
 
 type MenuItem struct {
-	ID        int
-	Name      string
-	Link      string
-	Component string
-	Variant   string
-	Icon      string
-	ParentID  int
-	SubMenu   []MenuItem
+	ID        int        `json:"id"`
+	Name      string     `json:"name"`
+	Link      string     `json:"link"`
+	Component string     `json:"component"`
+	Variant   string     `json:"variant"`
+	Icon      string     `json:"icon"`
+	ParentID  int        `json:"parentId"`
+	SubMenu   []MenuItem `json:"subMenu"`
 }
 
 func MenuHirearchy(allMenu []MenuItem) MenuItem {

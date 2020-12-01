@@ -19,6 +19,8 @@ func main() {
 
 	router.HandleFunc("/menu/{id}", controllers.GetMenu).Methods("GET")
 	router.HandleFunc("/menu", controllers.GetAllMenu).Methods("GET")
+	router.HandleFunc("/menu_tree/{id}", controllers.GetMenuTree).Methods("GET")
+	router.HandleFunc("/menu_tree", controllers.GetAllMenuTree).Methods("GET")
 	router.HandleFunc("/menu", controllers.CreateMenu).Methods("POST")
 	router.HandleFunc("/menu/{id}", controllers.UpdateMenu).Methods("PUT")
 	router.HandleFunc("/menu/{id}", controllers.DeleteMenu).Methods("DELETE")

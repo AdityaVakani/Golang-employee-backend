@@ -14,6 +14,52 @@ import (
 func GetMenu(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
+	result, err := db.Query(`SELECT * FROM menu where parentID = (select parentID from menu where menuID=?)`, params["id"])
+
+	if err != nil {
+		log.Println("error querying in GetMenu", err)
+		return
+	}
+	defer result.Close()
+	var allMenu []models.MenuItem
+	for result.Next() {
+		var menu models.MenuItem
+		err := result.Scan(&menu.ID, &menu.Name, &menu.Link, &menu.Component, &menu.Variant, &menu.Icon, &menu.ParentID)
+		if err != nil {
+			log.Println("error reading select results", err)
+			return
+		}
+
+		allMenu = append(allMenu, menu)
+	}
+	json.NewEncoder(w).Encode(allMenu)
+}
+
+func GetAllMenu(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	result, err := db.Query(`SELECT * FROM menu where parentID=0`)
+	if err != nil {
+		log.Println("error querying in GetAllMenu", err)
+		return
+	}
+	defer result.Close()
+	var allMenu []models.MenuItem
+	for result.Next() {
+		var menu models.MenuItem
+		err := result.Scan(&menu.ID, &menu.Name, &menu.Link, &menu.Component, &menu.Variant, &menu.Icon, &menu.ParentID)
+		if err != nil {
+			log.Println("error reading select results", err)
+			return
+		}
+		allMenu = append(allMenu, menu)
+
+	}
+	json.NewEncoder(w).Encode(allMenu)
+}
+
+func GetMenuTree(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	params := mux.Vars(r)
 	result, err := db.Query(
 		`with recursive cte as (
 		  select     menuID,menuName,menuLink,menuComponent,menuVariant,menuIcon,
@@ -30,7 +76,7 @@ func GetMenu(w http.ResponseWriter, r *http.Request) {
 	  select * from menu where menuID = ? union all select * from cte`, params["id"], params["id"])
 
 	if err != nil {
-		log.Println("error querying in GetMenu", err)
+		log.Println("error querying in GetMenuTree", err)
 		return
 	}
 
@@ -53,7 +99,7 @@ func GetMenu(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func GetAllMenu(w http.ResponseWriter, r *http.Request) {
+func GetAllMenuTree(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	result1, err := db.Query("SELECT menuID FROM menu where parentID = 0")
 	if err != nil {
