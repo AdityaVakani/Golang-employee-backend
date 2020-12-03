@@ -11,10 +11,31 @@ import (
 	"github.com/gorilla/mux"
 )
 
+func GetMenuRow(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	params := mux.Vars(r)
+	result, err := db.Query(`SELECT * FROM menu where menuID = ?`, params["id"])
+
+	if err != nil {
+		log.Println("error querying in GetMenu", err)
+		return
+	}
+	defer result.Close()
+	var menu models.MenuItem
+	for result.Next() {
+		err := result.Scan(&menu.ID, &menu.Name, &menu.Link, &menu.Component, &menu.Variant, &menu.Icon, &menu.ParentID)
+		if err != nil {
+			log.Println("error reading select results", err)
+			return
+		}
+	}
+	json.NewEncoder(w).Encode(menu)
+}
+
 func GetMenu(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
-	result, err := db.Query(`SELECT * FROM menu where parentID = (select parentID from menu where menuID=?)`, params["id"])
+	result, err := db.Query(`SELECT * FROM menu where parentID = ?`, params["id"])
 
 	if err != nil {
 		log.Println("error querying in GetMenu", err)

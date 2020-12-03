@@ -17,6 +17,7 @@ func main() {
 	router.HandleFunc("/employee/{id}", controllers.UpdateEmpAll).Methods("PUT")
 	router.HandleFunc("/employee/{id}", controllers.DeleteEmp).Methods("DELETE")
 
+	router.HandleFunc("/menu_row/{id}", controllers.GetMenuRow).Methods("GET")
 	router.HandleFunc("/menu/{id}", controllers.GetMenu).Methods("GET")
 	router.HandleFunc("/menu", controllers.GetAllMenu).Methods("GET")
 	router.HandleFunc("/menu_tree/{id}", controllers.GetMenuTree).Methods("GET")
